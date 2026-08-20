@@ -1,5 +1,4 @@
-// DEBUG: 
-#include <ostream.hpp>
+// DEBUG: #include <ostream.hpp>
 
 /*
  * keyValueDatabase.hpp for Arduino (ESP boards with flash disk)
@@ -249,8 +248,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                            // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -258,8 +257,8 @@
                         return err_bad_alloc;
                     }
 
-                if (is_same<valueType, String>::value)                  // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &value) {                          // ... check if parameter construction is valid
+                if constexpr (is_same<valueType, String>::value)
+                    if (!value) { // if value construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -280,16 +279,16 @@
                 // 1. get ready for writting into __dataFile__
                 size_t dataSize = sizeof (int16_t); // block size information
                 size_t blockSize = dataSize;
-                if (is_same<keyType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    dataSize += (((String *) &key)->length () + 1); // add 1 for closing 0
-                    blockSize += (((String *) &key)->length () + 1) + (((String *) &key)->length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__ + 0.5; // add PCT_FREE for Strings
+                if constexpr (is_same<keyType, String>::value) {
+                    dataSize += (key.length () + 1); // add 1 for closing 0
+                    blockSize += (key.length () + 1) + 0.5 + (key.length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__; // add PCT_FREE for Strings
                 } else { // fixed size key
                     dataSize += sizeof (keyType);
                     blockSize += sizeof (keyType);
                 }                
-                if (is_same<valueType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    dataSize += (((String *) &value)->length () + 1); // add 1 for closing 0
-                    blockSize += (((String *) &value)->length () + 1) + (((String *) &value)->length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__ + 0.5; // add PCT_FREE for Strings
+                if constexpr (is_same<valueType, String>::value) {
+                    dataSize += (value.length () + 1); // add 1 for closing 0
+                    blockSize += (value.length () + 1) + 0.5 + (value.length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__; // add PCT_FREE for Strings
                 } else { // fixed size value
                     dataSize += sizeof (valueType);
                     blockSize += sizeof (valueType);
@@ -353,15 +352,15 @@
                 int16_t i = 0;
                 int16_t bs = (int16_t) blockSize;
                 memcpy (block + i, &bs, sizeof (bs)); i += sizeof (bs);
-                if (is_same<keyType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    size_t l = ((String *) &key)->length () + 1; // add 1 for closing 0
-                    memcpy (block + i, ((String *) &key)->c_str (), l); i += l;
+                if constexpr (is_same<keyType, String>::value) {
+                    size_t l = key.length () + 1; // add 1 for closing 0
+                    memcpy (block + i, key.c_str (), l); i += l;
                 } else { // fixed size key
                     memcpy (block + i, &key, sizeof (key)); i += sizeof (key);
                 }       
-                if (is_same<valueType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    size_t l = ((String *) &value)->length () + 1; // add 1 for closing 0
-                    memcpy (block + i, ((String *) &value)->c_str (), l); i += l;
+                if constexpr (is_same<valueType, String>::value) {
+                    size_t l = value.length () + 1; // add 1 for closing 0
+                    memcpy (block + i, value.c_str (), l); i += l;
                 } else { // fixed size value
                     memcpy (block + i, &value, sizeof (value)); i += sizeof (value);
                 }
@@ -412,8 +411,8 @@
             */
 
             signed char FindBlockOffset (keyType key, uint32_t& blockOffset) {
-                if (is_same<keyType, String>::value)                                                                          // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                                                                                   // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)                                                                          // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -458,8 +457,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                                                                          // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                                                                                   // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -534,8 +533,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                            // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -543,8 +542,8 @@
                         return err_bad_alloc;
                     }
 
-                if (is_same<valueType, String>::value)                  // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &newValue) {                       // ... check if parameter construction is valid
+                if constexpr (is_same<valueType, String>::value)
+                    if (!newValue) { // if newValue construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -603,16 +602,16 @@
                 // 3. calculate new block and data size
                 size_t dataSize = sizeof (int16_t); // block size information
                 newBlockSize = dataSize;
-                if (is_same<keyType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    dataSize += (((String *) &key)->length () + 1); // add 1 for closing 0
-                    newBlockSize += (((String *) &key)->length () + 1) + (((String *) &key)->length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__ + 0.5; // add PCT_FREE for Strings
+                if constexpr (is_same<keyType, String>::value) {
+                    dataSize += (key.length () + 1); // add 1 for closing 0
+                    newBlockSize += (key.length () + 1) + 0.5 + (key.length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__; // add PCT_FREE for Strings
                 } else { // fixed size key
                     dataSize += sizeof (keyType);
                     newBlockSize += sizeof (keyType);
                 }                
-                if (is_same<valueType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    dataSize += (((String *) &newValue)->length () + 1); // add 1 for closing 0
-                    newBlockSize += (((String *) &newValue)->length () + 1) + (((String *) &newValue)->length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__ + 0.5; // add PCT_FREE for Strings
+                if constexpr (is_same<valueType, String>::value) {
+                    dataSize += (newValue.length () + 1); // add 1 for closing 0
+                    newBlockSize += (newValue.length () + 1) + 0.5 + (newValue.length () + 1) * __KEY_VALUE_DATABASE_PCT_FREE__; // add PCT_FREE for Strings
                 } else { // fixed size value
                     dataSize += sizeof (valueType);
                     newBlockSize += sizeof (valueType);
@@ -636,8 +635,8 @@
                     // DEBUG: cout << "   reuse the same block\n";
 
                     uint32_t dataFileOffset = *pBlockOffset + sizeof (int16_t); // skip block size information
-                    if (is_same<keyType, String>::value) { // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                        dataFileOffset += (((String *) &key)->length () + 1); // add 1 for closing 0
+                    if constexpr (is_same<keyType, String>::value) {
+                        dataFileOffset += (key.length () + 1); // add 1 for closing 0
                     } else { // fixed size key
                         dataFileOffset += sizeof (keyType);
                     }                
@@ -645,9 +644,9 @@
                     // 5. write new value to __dataFile__
                     int16_t bufferSize;
                     byte *pBuffer;
-                    if (is_same<valueType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                        bufferSize = (((String *) &newValue)->length () + 1);
-                        pBuffer = (byte *) ((String *) &newValue)->c_str ();
+                    if constexpr (is_same<valueType, String>::value) {
+                        bufferSize = (newValue.length () + 1);
+                        pBuffer = (byte *) newValue.c_str ();
                     } else {
                         bufferSize = sizeof (newValue);
                         pBuffer = (byte *) &newValue;
@@ -704,15 +703,15 @@
                     int16_t i = 0;
                     int16_t bs = (int16_t) newBlockSize;
                     memcpy (block + i, &bs, sizeof (bs)); i += sizeof (bs);
-                    if (is_same<keyType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                        size_t l = ((String *) &key)->length () + 1; // add 1 for closing 0
-                        memcpy (block + i, ((String *) &key)->c_str (), l); i += l;
+                    if constexpr (is_same<keyType, String>::value) {
+                        size_t l = key.length () + 1; // add 1 for closing 0
+                        memcpy (block + i, key.c_str (), l); i += l;
                     } else { // fixed size key
                         memcpy (block + i, &key, sizeof (key)); i += sizeof (key);
                     }       
-                    if (is_same<valueType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                        size_t l = ((String *) &newValue)->length () + 1; // add 1 for closing 0
-                        memcpy (block + i, ((String *) &newValue)->c_str (), l); i += l;
+                    if constexpr (is_same<valueType, String>::value) {
+                        size_t l = newValue.length () + 1; // add 1 for closing 0
+                        memcpy (block + i, newValue.c_str (), l); i += l;
                     } else { // fixed size value
                         memcpy (block + i, &newValue, sizeof (newValue)); i += sizeof (newValue);
                     }
@@ -783,8 +782,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                                                                          // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                                                                                   // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -831,8 +830,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                            // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -840,8 +839,8 @@
                         return err_bad_alloc;
                     }
 
-                if (is_same<valueType, String>::value)                  // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &newValue) {                       // ... check if parameter construction is valid
+                if constexpr (is_same<valueType, String>::value)
+                    if (!newValue) { // if newValue construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -873,8 +872,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                            // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -882,8 +881,8 @@
                         return err_bad_alloc;
                     }
 
-                if (is_same<valueType, String>::value)                  // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &defaultValue) {                   // ... check if parameter construction is valid
+                if constexpr (is_same<valueType, String>::value)
+                    if (!defaultValue) { // if defaultValue construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -912,8 +911,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                            // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -966,8 +965,8 @@
                     return err_file_io; 
                 }
 
-                if (is_same<keyType, String>::value)                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                    if (!*(String *) &key) {                            // ... check if parameter construction is valid
+                if constexpr (is_same<keyType, String>::value)
+                    if (!key) { // if key construction failed
                         #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                             throw err_bad_alloc;
                         #endif
@@ -1074,8 +1073,8 @@
                         __parent__ = parent;
                         __key__ = *key;
 
-                        if (is_same<keyType, String>::value)                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                            if (!*(String *) &__key__) {                        // ... check if parameter construction is valid
+                        if constexpr (is_same<keyType, String>::value)
+                            if (!__key__) { // if __key__ construction failed
                                 #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                                     throw err_bad_alloc;
                                 #endif
@@ -1104,8 +1103,8 @@
                         
                         // DEBUG: cout << "[" << __key__ << "] = " << value << endl;
                         
-                        if (is_same<valueType, String>::value) {                // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                            if (!*(String *) &value) {                          // ... check if parameter construction is valid
+                        if constexpr (is_same<valueType, String>::value) {
+                            if (!value) { // if value construction failed
                                 #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                                     throw err_bad_alloc;
                                 #endif
@@ -1170,8 +1169,8 @@
                         if (__parent__->FindValue (__key__, &value)) // error or not found
                             return *this;
 
-                        if (is_same<valueType, String>::value) {                    // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
-                            if (!*(String *) &other) {                              // ... check if parameter construction is valid
+                        if constexpr (is_same<valueType, String>::value) {
+                            if (!other) { // if other construction failed
                                 #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                                     throw err_bad_alloc;
                                 #endif
@@ -1503,12 +1502,12 @@
                 }
 
                 // read key
-                if (is_same<keyType, String>::value) { // if key is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
+                if constexpr (is_same<keyType, String>::value) {
                     // read the file until 0 is read
                     while (__dataFile__.available ()) { 
                             char c = (char) __dataFile__.read (); 
                             if (!c) break;
-                            if (!((String *) &key)->concat (c)) {
+                            if (!key.concat (c)) {
                                 #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                                     throw err_bad_alloc;
                                 #endif
@@ -1529,12 +1528,12 @@
 
                 // read value
                 if (!skipReadingValue) {
-                    if (is_same<valueType, String>::value) { // if value is of type String ... (if anyone knows hot to do this in compile-time a feedback is welcome)
+                    if constexpr (is_same<valueType, String>::value) {
                         // read the file until 0 is read               
                         while (__dataFile__.available ()) { 
                                 char c = (char) __dataFile__.read (); 
                                 if (!c) break;
-                                if (!((String *) &value)->concat (c)) {
+                                if (!value.concat (c)) {
                                     #ifdef __USE_KEY_VALUE_DATABASE_EXCEPTIONS__
                                         throw err_bad_alloc;
                                     #endif
