@@ -1,14 +1,10 @@
-#include <LittleFS.h>
-#include <threadSafeFS.h> 
-using File = threadSafeFS::File;    // Use thread-safe wrapper for all file operations from now on in your code
+#include <LittleFS.h>       // Use LittleFS as base file system
+#include <threadSafeFS.h>   // Create tsfs (thread safe wrapper) arround LittleFS
 
 
-// 1️⃣ Crete thread-safe wrapper arround LittleFS (or SPIFFS or FFat or SD)
-threadSafeFS::FS TSFS (LittleFS);
-
-// 2️⃣ Include keyValueDatabase class and create an instance using TSFS
+// 1️⃣ Include keyValueDatabase class and create an instance using tsfs (thread-safe file system)
 #include <keyValueDatabase.hpp>
-keyValueDatabase<int, String> kvdb (TSFS);  // database instance where keys are integers and values are Strings (in this example)
+keyValueDatabase<int, String> kvdb; // or kvdb (tsfs);  // database instance where keys are integers and values are Strings (in this example)
 
 
 void setup () {
@@ -18,15 +14,15 @@ void setup () {
     delay (3000);
 
 
-    // 3️⃣ Mount file system
-    LittleFS.begin (true);
-    // if (LittleFS.format ()) Serial.println ("LittleFs formatted"); else Serial.println ("LittleFs formatting failed");
+    // 2️⃣ Mount the (underlaying) file system
+    tsfs.begin (true);
+    // if (tsfs.format ()) Serial.println ("LittleFs formatted"); else Serial.println ("LittleFs formatting failed");
 
     signed char e;
 
 
-    // 4️⃣ Open key-value database: load index values from the data file to balanced binary search tree
-    Serial.println ("4️⃣ Open key-value database");
+    // 3️⃣ Open key-value database: load index values from the data file to balanced binary search tree
+    Serial.println ("3️⃣ Open key-value database");
     e = kvdb.Open ("/example.kvdb");
     if (!e) //  OK
         Serial.printf ("   initially loaded %i key-value pairs\n", kvdb.size ());
@@ -40,8 +36,8 @@ void setup () {
     Serial.println ("key-value database truncated");
 
 
-    // 5️⃣ Example of inserting new key-value pairs
-    Serial.println ("5️⃣ a) Example of inserting new key-value pairs");
+    // 4️⃣ Example of inserting new key-value pairs
+    Serial.println ("4️⃣ a) Example of inserting new key-value pairs");
     e = kvdb.Insert (7, "seven");
     if (e) // != OK
         Serial.printf ("   kvdb.Insert failed, check errorFalgs () for details\n");
@@ -56,7 +52,7 @@ void setup () {
 
     // --- alternativelly: ---
     kvdb.clearErrorFlags ();
-    Serial.println ("5️⃣ b) Example of inserting new key-value pairs");
+    Serial.println ("4️⃣ b) Example of inserting new key-value pairs");
     kvdb [10] = "ten";
     if (kvdb.errorFlags ())
         Serial.println ("   insert of 10 failed");
@@ -64,8 +60,8 @@ void setup () {
         Serial.println ("   inserted key-value pair");
 
 
-    // 6️⃣ Examples of finding a key in key-value database
-    Serial.println ("6️⃣ Examples of finding a key in key-value database");
+    // 5️⃣ Examples of finding a key in key-value database
+    Serial.println ("5️⃣ Examples of finding a key in key-value database");
     uint32_t blockOffset; // not needed for searching for a key, but will coma handy later when searching for a value
     e = kvdb.FindBlockOffset (8, blockOffset);
     switch (e) {
@@ -78,8 +74,8 @@ void setup () {
     }
 
 
-    // 7️⃣ Examples of finding a value belonging to a given key
-    Serial.println ("7️⃣ a) Examples of finding a value belonging to a given key");
+    // 6️⃣ Examples of finding a value belonging to a given key
+    Serial.println ("6️⃣ a) Examples of finding a value belonging to a given key");
     String value;
     e = kvdb.FindValue (8, &value); 
     switch (e) {
@@ -92,7 +88,7 @@ void setup () {
     }    
 
     // --- alternativelly: ---
-    Serial.println ("7️⃣ b) Examples of finding a value belonging to a given key");
+    Serial.println ("6️⃣ b) Examples of finding a value belonging to a given key");
     value = kvdb [9];
     if (value > "") { // or: if (!kvdb.errorFlags ())
         Serial.print ("   9 found: "); Serial.println (value);
@@ -101,8 +97,8 @@ void setup () {
     }
     
 
-    // 8️⃣ Example of deleting a key-value pair from key-value database
-    Serial.println ("8️⃣ Example of deleting a key-value pair from key-value database");
+    // 7️⃣ Example of deleting a key-value pair from key-value database
+    Serial.println ("7️⃣ Example of deleting a key-value pair from key-value database");
     e = kvdb.Delete (7); 
     if (e) // != OK
         Serial.printf ("   kvdb.Delete failed, check errorFalgs () for details\n");
@@ -110,8 +106,8 @@ void setup () {
         Serial.println ("   OK");
 
 
-    // 9️⃣ Example of updating the value for a given key
-    Serial.println ("9️⃣ a) Example of updating the value for a given key");
+    // 8️⃣ Example of updating the value for a given key
+    Serial.println ("8️⃣ a) Example of updating the value for a given key");
     // update (a) the value (most simple version of calling update)
     e = kvdb.Update (8, "eight"); 
     if (e) // != OK
@@ -120,7 +116,7 @@ void setup () {
         Serial.println ("   OK");
 
 
-    Serial.println ("9️⃣ b) Example of updating the value with calculation from previous value");
+    Serial.println ("8️⃣ b) Example of updating the value with calculation from previous value");
     // update (b) the value with calculation (update with locking to prevent other tasks changind the data while the calculation is not finished)
     kvdb.Lock ();
         String oldValue;
@@ -134,7 +130,7 @@ void setup () {
         Serial.println ("   OK");
 
 
-    Serial.println ("9️⃣ c) Example of updating the value with calculation using lambda function");
+    Serial.println ("8️⃣ c) Example of updating the value with calculation using lambda function");
     // update (c) the value with calculation using lambda callback function, the locking is already integrated so the calculation can be performed without problems
     // this mechanism is usefull for example for counters (increasing the value), etc)
     e = kvdb.Update (9, [] (String& value) { value.toUpperCase (); } ); 
@@ -143,7 +139,7 @@ void setup () {
     else
         Serial.println ("   OK");
 
-    Serial.println ("9️⃣ d) Example of updating the value with [] operator");
+    Serial.println ("8️⃣ d) Example of updating the value with [] operator");
     // --- alternativelly: ---
     kvdb.clearErrorFlags ();
     kvdb [10] = "TEN";
@@ -152,7 +148,7 @@ void setup () {
     else
         Serial.println ("   OK");
 
-    Serial.println ("9️⃣ e) Example of updating the values (with calculation) during iteration using lambda function");
+    Serial.println ("8️⃣ e) Example of updating the values (with calculation) during iteration using lambda function");
     // Please note that database is already locked throughtout the iterator, so additional locking is not needed.
     for (auto& p: kvdb) {
         e = kvdb.Update (p.key, [] (String& value) { value = "»" + value + "«"; }, &(p.blockOffset)); // since block offset is already known it will speed up Update operation if we provide this information
@@ -163,8 +159,8 @@ void setup () {
         Serial.println ("   OK");    
 
 
-    // 🔟 Example of iterating through all key-value pairs
-    Serial.println ("🔟 Example of iterating through all key-value pairs");
+    // 9️⃣ Example of iterating through all key-value pairs
+    Serial.println ("9️⃣ Example of iterating through all key-value pairs");
     for (auto& p: kvdb) {
         // keys are always kept in memory and are obtained fast
         Serial.print ("   key:"); Serial.print (p.key); Serial.print (", blockOffset:"); Serial.print (p.blockOffset); Serial.print (", value:"); 
@@ -179,8 +175,8 @@ void setup () {
     }
 
 
-    // 1️⃣1️⃣ Detecting errors that occured in key-value database operations
-    Serial.println ("1️⃣1️⃣ Detecting errors that occured in key-value database operations");
+    // 🔟 Detecting errors that occured in key-value database operations
+    Serial.println ("🔟 Detecting errors that occured in key-value database operations");
     for (auto& p: kvdb) {
         String value;
         e = kvdb.FindValue (p.key, &value, p.blockOffset);
@@ -200,15 +196,15 @@ void setup () {
     }
 
 
-    // 1️⃣2️⃣ Checking errors only once after multiple operations
-    Serial.println ("1️⃣2️⃣ Checking errors only once after multiple operations");
+    // 1️⃣1️⃣ Checking errors only once after multiple operations
+    Serial.println ("1️⃣1️⃣ Checking errors only once after multiple operations");
     kvdb.clearErrorFlags ();
     for (int i = 1000; i < 1100; i++)
         kvdb.Insert (i, String (i));
 
 
-    // 1️⃣3️⃣ Find first (last) keys
-    Serial.println ("1️⃣3️⃣ Find first (last) keys");
+    // 1️⃣2️⃣ Find first (last) keys
+    Serial.println ("1️⃣2️⃣ Find first (last) keys");
     auto firstElement = first_element (kvdb);
     if (firstElement) // check if first element is found (if kvdb is not empty)
         Serial.printf ("   first element (min key) of kvdb = %i\n", (*firstElement).key);
@@ -218,9 +214,9 @@ void setup () {
         Serial.printf ("   last element (max key) of kvdb = %i\n", (*lastElement).key);
 
 
-    // 1️⃣4️⃣ Capacity and speed test
-    Serial.println ("1️⃣4️⃣ Capacity and speed test");    
-    keyValueDatabase<unsigned long, String> test (TSFS);
+    // 1️⃣3️⃣ Capacity and speed test
+    Serial.println ("1️⃣3️⃣ Capacity and speed test");    
+    keyValueDatabase<unsigned long, String> test (tsfs);
     test.Open ("/test.kvdb");
     if (test.errorFlags ()) // != OK 
         Serial.printf ("   test failed to load data: %i, all the data may not be indexed\n", test.errorFlags ());
