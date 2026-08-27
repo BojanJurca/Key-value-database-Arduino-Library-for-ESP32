@@ -107,6 +107,10 @@
             void clearErrorFlags () { __errorFlags__ = 0; }
 
             keyValueDatabase (threadSafeFS::FS& fileSystem) :  __fileSystem__ (fileSystem) {}
+            // if there is only one file system add more simple constructor
+            #if TSFS_FS_COUNT == 1
+                keyValueDatabase () :  __fileSystem__ (tsfs) {}
+            #endif
 
             ~keyValueDatabase () { 
                 Close ();
